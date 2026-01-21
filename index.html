@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Dashboard</title>
+    <style>
+        /* --- CSS VARIABLES & THEME --- */
+        :root {
+            /* Default to a cool Lo-Fi GIF */
+            --bg-image: url('https://media.giphy.com/media/u49M5lKcsrBjq/giphy.gif'); 
+            --overlay-color: rgba(0, 0, 0, 0.5);
+            --text-color: #ffffff;
+            --container-bg: rgba(0, 0, 0, 0.4);
+            --accent-color: #4facfe;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body.light-mode {
+            --overlay-color: rgba(255, 255, 255, 0.2);
+            --text-color: #222;
+            --container-bg: rgba(255, 255, 255, 0.6);
+            --accent-color: #005bea;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- GLOBAL LAYOUT --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+            color: var(--text-color);
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            overflow: hidden; /* Prevents scrollbars */
+            transition: color 0.3s ease;
+        }
+
+        .overlay {
+            background-color: var(--overlay-color);
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background-color 0.5s ease;
+        }
+
+        /* --- WIDGET STYLES --- */
+        .widget-box {
+            background: var(--container-bg);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: fadeIn 1s ease-out;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.95); }
+
+        /* --- TOP SECTION --- */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .quote-widget {
+            font-style: italic;
+            font-size: 0.9rem;
+            max-width: 300px;
+            opacity: 0.9;
+        }
+
+        .weather-widget {
+            text-align: right;
+            font-size: 1.1rem;
+        }
+
+        /* --- CENTER SECTION --- */
+        .center-content {
+            text-align: center;
+            align-self: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            animation: fadeIn 1.5s ease-out;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        /* Clock & Greeting */
+        #clock {
+            font-size: 5rem;
+            font-weight: 700;
+            line-height: 1;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+        #greeting-container { font-size: 1.8rem; }
+        
+        [contenteditable]:focus {
+            outline: none;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        /* Search Bar */
+        .search-container input {
+            width: 300px;
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-color);
+            font-size: 1rem;
+            backdrop-filter: blur(5px);
+            transition: width 0.3s ease, background 0.3s;
+        }
+        .search-container input::placeholder { color: rgba(255, 255, 255, 0.7); }
+        .search-container input:focus {
+            width: 350px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #222;
+            outline: none;
+        }
+
+        /* Focus Input */
+        #focus-container input[type="text"] {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--text-color);
+            color: var(--text-color);
+            font-size: 1.5rem;
+            text-align: center;
+            outline: none;
+        }
+        .completed { text-decoration: line-through; opacity: 0.6; }
+
+        /* Pomodoro Timer */
+        .pomodoro-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        #timer-display {
+            font-size: 2rem;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums; /* Keeps numbers from jumping */
+        }
+        .pomo-btn {
+            background: var(--accent-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* --- BOTTOM SECTION --- */
+        .bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Speed Dial */
+        .speed-dial { display: flex; gap: 15px; }
+        .speed-dial a {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            background: var(--container-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            backdrop-filter: blur(5px);
+            transition: transform 0.2s, background 0.2s;
+        }
+        .speed-dial a:hover {
+            transform: translateY(-5px);
+            background: var(--accent-color);
+        }
+
+        /* Controls (BG & Theme) */
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        .control-btn {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-color);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Sticky Todo */
+        .todo-widget {
+            width: 250px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .todo-widget h3 { margin: 0 0 10px 0; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;}
+        .todo-widget input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            color: var(--text-color);
+            padding: 5px;
+            box-sizing: border-box; 
+        }
+        .todo-widget ul { list-style: none; padding: 0; margin-top: 10px; }
+        .todo-widget li {
+            font-size: 0.9rem;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+        }
+        .todo-widget li:hover { opacity: 0.7; }
+
+    </style>
+</head>
+<body>
+    <div class="overlay">
+        
+        <div class="top-bar">
+            <div class="widget-box quote-widget" id="quote-box">
+                "Loading inspiration..."
+            </div>
+            
+            <div class="weather-widget widget-box" id="weather">
+                Wait...
+            </div>
+        </div>
+
+        <div class="center-content">
+            
+            <div>
+                <div id="clock">00:00</div>
+                <div id="greeting-container">
+                    <span id="greeting">Hello</span>, 
+                    <span id="name-display" contenteditable="true">User</span>
+                </div>
+            </div>
+
+            <form action="https://www.google.com/search" method="get" target="_blank" class="search-container">
+                <input type="text" name="q" placeholder="Search Google..." autocomplete="off">
+            </form>
+
+            <div id="focus-container">
+                <input type="text" id="focus-input" placeholder="Main focus for today?">
+                <div id="focus-display" style="display:none;">
+                    <input type="checkbox" id="focus-check">
+                    <span id="focus-text"></span>
+                    <button id="focus-delete" style="background:none; color:inherit;">×</button>
+                </div>
+            </div>
+
+            <div class="widget-box pomodoro-box">
+                <span>🍅 Focus Timer</span>
+                <span id="timer-display">25:00</span>
+                <button class="pomo-btn" id="start-timer">Start</button>
+                <button class="pomo-btn" id="reset-timer" style="background:transparent; border:1px solid white;">Reset</button>
+            </div>
+        </div>
+
+        <div class="bottom-bar">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div class="speed-dial">
+                    <a href="https://gmail.com" target="_blank">M</a>
+                    <a href="https://youtube.com" target="_blank">YT</a>
+                    <a href="https://github.com" target="_blank">Git</a>
+                    <a href="https://chatgpt.com" target="_blank">AI</a>
+                </div>
+                <div class="controls">
+                    <button class="control-btn" id="bg-switch-btn">Next BG</button>
+                    <button class="control-btn" id="bg-custom-btn">Custom URL</button>
+                    <button class="control-btn" id="theme-toggle">🌗 Mode</button>
+                </div>
+            </div>
+
+            <div class="widget-box todo-widget">
+                <h3>📝 Sticky Notes</h3>
+                <input type="text" id="todo-input" placeholder="+ Add task">
+                <ul id="todo-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- 1. CLOCK & GREETING --- */
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = 
+                String(now.getHours()).padStart(2, '0') + ':' + 
+                String(now.getMinutes()).padStart(2, '0');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        const nameDisplay = document.getElementById('name-display');
+        if(localStorage.getItem('dashName')) nameDisplay.innerText = localStorage.getItem('dashName');
+        nameDisplay.addEventListener('blur', () => localStorage.setItem('dashName', nameDisplay.innerText));
+
+        function updateGreeting() {
+            const h = new Date().getHours();
+            const g = h < 12 ? "Good Morning" : h < 18 ? "Good Afternoon" : "Good Evening";
+            document.getElementById('greeting').innerText = g;
+        }
+        updateGreeting();
+
+        /* --- 2. QUOTE GENERATOR (API) --- */
+        function getQuote() {
+            fetch('https://api.quotable.io/random?minLength=50&maxLength=100')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('quote-box').innerText = `"${data.content}" - ${data.author}`;
+                })
+                .catch(() => {
+                    document.getElementById('quote-box').innerText = "\"Code is like humor. When you have to explain it, it’s bad.\"";
+                });
+        }
+        getQuote(); // Run on load
+
+        /* --- 3. POMODORO TIMER --- */
+        let timerInterval;
+        let timeLeft = 25 * 60; // 25 minutes in seconds
+        const timerDisplay = document.getElementById('timer-display');
+        const startBtn = document.getElementById('start-timer');
+
+        function updateTimer() {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            timerDisplay.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (timerInterval) { // Pause logic
+                clearInterval(timerInterval);
+                timerInterval = null;
+                startBtn.innerText = "Start";
+            } else { // Start logic
+                startBtn.innerText = "Pause";
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    updateTimer();
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        alert("Pomodoro Complete! Take a break.");
+                        timeLeft = 25 * 60;
+                        updateTimer();
+                        startBtn.innerText = "Start";
+                        timerInterval = null;
+                    }
+                }, 1000);
+            }
+        });
+
+        document.getElementById('reset-timer').addEventListener('click', () => {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timeLeft = 25 * 60;
+            updateTimer();
+            startBtn.innerText = "Start";
+        });
+
+        /* --- 4. DAILY FOCUS --- */
+        const fInput = document.getElementById('focus-input');
+        const fDisplay = document.getElementById('focus-display');
+        const fText = document.getElementById('focus-text');
+        const fCheck = document.getElementById('focus-check');
+
+        // Load Focus
+        const savedFocus = localStorage.getItem('dailyFocus');
+        if(savedFocus) {
+            fInput.style.display = 'none';
+            fDisplay.style.display = 'block';
+            fText.innerText = savedFocus;
+            fCheck.checked = localStorage.getItem('dailyFocusDone') === 'true';
+            if(fCheck.checked) fText.classList.add('completed');
+        }
+
+        fInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                localStorage.setItem('dailyFocus', fInput.value);
+                fInput.style.display = 'none';
+                fDisplay.style.display = 'block';
+                fText.innerText = fInput.value;
+            }
+        });
+
+        fCheck.addEventListener('change', () => {
+            fText.classList.toggle('completed');
+            localStorage.setItem('dailyFocusDone', fCheck.checked);
+        });
+
+        document.getElementById('focus-delete').addEventListener('click', () => {
+            localStorage.removeItem('dailyFocus');
+            localStorage.removeItem('dailyFocusDone');
+            location.reload(); // Quick refresh to reset state
+        });
+
+        /* --- 5. STICKY TODO --- */
+        const todoIn = document.getElementById('todo-input');
+        const todoUl = document.getElementById('todo-list');
+
+        function renderTodos() {
+            const todos = JSON.parse(localStorage.getItem('dashTodos')) || [];
+            todoUl.innerHTML = '';
+            todos.forEach((t, i) => {
+                const li = document.createElement('li');
+                li.innerText = t;
+                li.onclick = () => {
+                    todos.splice(i, 1);
+                    localStorage.setItem('dashTodos', JSON.stringify(todos));
+                    renderTodos();
+                };
+                todoUl.appendChild(li);
+            });
+        }
+        
+        todoIn.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter' && todoIn.value) {
+                const todos = JSON.parse(localStorage.getItem('dashTodos')) || [];
+                todos.push(todoIn.value);
+                localStorage.setItem('dashTodos', JSON.stringify(todos));
+                todoIn.value = '';
+                renderTodos();
+            }
+        });
+        renderTodos();
+
+        /* --- 6. BACKGROUND & THEME --- */
+        // Default backgrounds (GIFs included)
+        const bgs = [
+            'https://media.giphy.com/media/u49M5lKcsrBjq/giphy.gif', // Lo-fi City
+            'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2070', // Nature
+            'https://media.giphy.com/media/U3qYN8S0j3bpK/giphy.gif', // Vaporwave
+            'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2000' // Cyberpunk
+        ];
+        let bgIndex = 0;
+
+        // Load saved BG
+        const savedBg = localStorage.getItem('dashBg');
+        if(savedBg) document.documentElement.style.setProperty('--bg-image', `url('${savedBg}')`);
+
+        document.getElementById('bg-switch-btn').addEventListener('click', () => {
+            bgIndex = (bgIndex + 1) % bgs.length;
+            const newBg = bgs[bgIndex];
+            document.documentElement.style.setProperty('--bg-image', `url('${newBg}')`);
+            localStorage.setItem('dashBg', newBg);
+        });
+
+        document.getElementById('bg-custom-btn').addEventListener('click', () => {
+            const url = prompt("Paste an Image or GIF URL:");
+            if(url) {
+                document.documentElement.style.setProperty('--bg-image', `url('${url}')`);
+                localStorage.setItem('dashBg', url);
+            }
+        });
+
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+        });
+
+        /* --- 7. WEATHER --- */
+        navigator.geolocation.getCurrentPosition(pos => {
+            const { latitude, longitude } = pos.coords;
+            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('weather').innerText = `${data.current_weather.temperature}°C`;
+            })
+            .catch(() => document.getElementById('weather').innerText = "N/A");
+        }, () => document.getElementById('weather').innerText = "No Loc");
+
+    </script>
+</body>
+</html>
